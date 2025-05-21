@@ -1,9 +1,9 @@
 name: Update Data
 run-name: Updating data set
 on:
-  workflow_dispatch
-  #schedule:
-    #- cron: '37 08 * * *' # Every day at 08:37 UTC, a couple hours after the new daily drops
+  workflow_dispatch:
+  schedule:
+    - cron: '37 08 * * *' # Every day at 08:37 UTC, a couple hours after the new daily drops
 jobs:
   UpdateData:
     runs-on: ubuntu-latest
