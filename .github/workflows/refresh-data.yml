@@ -1,0 +1,53 @@
+name: Update Data
+run-name: Updating data set
+on:
+  workflow_dispatch
+  #schedule:
+    #- cron: '37 08 * * *' # Every day at 08:37 UTC, a couple hours after the new daily drops
+jobs:
+  UpdateData:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone into main repo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+      - name: Clone into data repo
+        uses: actions/checkout@v4
+        with:
+          name: sybilwolf/eth-daily-archiver-data
+          ref: main
+          path: data
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up PRAW credential environment variables
+        run: |
+          echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
+          echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
+          echo "USER_AGENT=${{ secrets.USER_AGENT }}" >> .env
+          echo "REDDIT_USERNAME=${{ secrets.REDDIT_USERNAME }}" >> .env
+          echo "REDDIT_PASSWORD=${{ secrets.REDDIT_PASSWORD }}" >> .env
+      - name: Set up Poetry
+        uses: snok/install-poetry@v1.4.1
+      - name: Poetry install, Maturin develop
+        run: |
+          cd main
+          poetry install
+          maturin develop --release
+      - name: Run main.py
+        run: |
+          cd main
+          python main.py
+      - name: Commit and push changes to data branch
+        run: |
+          cd data
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "Update data from workflow"
+          git push
