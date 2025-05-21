@@ -14,21 +14,21 @@ jobs:
           repository: sybilwolf/eth-daily-archiver
           path: eth-daily-archiver
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ETH_ARCHIVER_TOKEN }}
       - name: Clone into data repo
         uses: actions/checkout@v4
         with:
           repository: sybilwolf/eth-daily-archiver-data
           path: eth-daily-archiver-data
           ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ETH_ARCHIVER_TOKEN }}
       - name: Clone into URS repo
         uses: actions/checkout@v4
         with:
           repository: sybilwolf/URS
           path: URS
           ref: master
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.ETH_ARCHIVER_TOKEN }}
       - name: Print working directory tree
         run: |
           echo "Working directory tree:"
@@ -71,5 +71,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git diff --cached --quiet || git commit -m "Update data from workflow"
-          # git push
-          echo "Dummy push for testing purposes. Success!"
+          git push
