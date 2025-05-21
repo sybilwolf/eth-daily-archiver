@@ -11,24 +11,29 @@ jobs:
       - name: Clone into main repo
         uses: actions/checkout@v4
         with:
-          name: sybilwolf/eth-daily-archiver
+          repository: sybilwolf/eth-daily-archiver
           path: eth-daily-archiver
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Clone into data repo
         uses: actions/checkout@v4
         with:
-          name: sybilwolf/eth-daily-archiver-data
+          repository: sybilwolf/eth-daily-archiver-data
           path: eth-daily-archiver-data
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Clone into URS repo
         uses: actions/checkout@v4
         with:
-          name: sybilwolf/URS
+          repository: sybilwolf/URS
           path: URS
-          ref: main
+          ref: master
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Print working directory tree
+        run: |
+          echo "Working directory tree:"
+          # https://stackoverflow.com/a/3455651
+          ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -37,25 +42,30 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Set up Poetry
         uses: snok/install-poetry@v1.4.1
-      - name: Set up PRAW credential environment variables
+      - name: Set up PRAW credential environment variables for URS
         run: |
-          echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
-          echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
-          echo "USER_AGENT=${{ secrets.USER_AGENT }}" >> .env
-          echo "REDDIT_USERNAME=${{ secrets.REDDIT_USERNAME }}" >> .env
-          echo "REDDIT_PASSWORD=${{ secrets.REDDIT_PASSWORD }}" >> .env
-      - name: URS poetry install, maturin develop
+          echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> URS/.env
+          echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> URS/.env
+          echo "USER_AGENT=${{ secrets.USER_AGENT }}" >> URS/.env
+          echo "REDDIT_USERNAME=${{ secrets.REDDIT_USERNAME }}" >> URS/.env
+          echo "REDDIT_PASSWORD=${{ secrets.REDDIT_PASSWORD }}" >> URS/.env
+      - name: URS poetry install
+        working-directory: URS
         run: |
-          cd URS
           poetry install
-          maturin develop --release
+      - name: Maturin build
+        uses: PyO3/maturin-action@v1
+        with:
+          command: develop
+          args: --release
+          working-directory: URS
       # - name: Run main.py
       #   run: |
       #     cd eth-daily-archiver
       #     python main.py
       - name: Run URS as a check
+        working-directory: eth-daily-archiver
         run: |
-          cd eth-daily-archiver
           python ./main.py --check
       # - name: Commit and push changes to data branch
       #   run: |
