@@ -10,9 +10,9 @@ import urllib.request
 import argparse
 import glob
 
-URS_ROOT_DIR = "./URS"
+URS_ROOT_DIR = "../URS"
 URS_SCRAPES_DIR = f"./scrapes"
-FINAL_SCRAPES_DIR = "../drdata"
+FINAL_SCRAPES_DIR = "../eth-daily-archiver-data"
 THREAD_ID_REGEX = re.compile('/comments/(.+?)/')
 SUBREDDIT_ID_REGEX = re.compile('r/(.+?)/comments/')
 
@@ -20,10 +20,19 @@ SUBREDDIT_ID_REGEX = re.compile('r/(.+?)/comments/')
 parser = argparse.ArgumentParser(description="Reddit daily scraper")
 parser.add_argument('-n', '--number-of-discussions', type=int, default=0,
                     help='Maximum number of reddit threads to process before exiting (0 means unlimited)')
+parser.add_argument('-c', '--check-quota', action='store_true',
+                    help='Check Reddit API quota and exit')
 args = parser.parse_args()
 
 # Print summary of command line flags
-print(f"Flags: --number-of-discussions={args.number_of_discussions}")
+print(f"Flags: --number-of-discussions={args.number_of_discussions} --check-quota={args.check_quota}")
+
+if args.check_quota:
+    # Run URS quota check and exit
+    check_cmd = "poetry run python ./urs/Urs.py --check"
+    print(f"Running quota check: {check_cmd}")
+    subprocess.run(check_cmd, shell=True, cwd=f"{URS_ROOT_DIR}/")
+    sys.exit(0)
 
 # Create directories if they don't exist
 subprocess.check_output(f"mkdir -p {FINAL_SCRAPES_DIR}/", shell=True, universal_newlines=True)
