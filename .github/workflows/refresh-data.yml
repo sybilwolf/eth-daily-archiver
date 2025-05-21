@@ -59,19 +59,17 @@ jobs:
           command: develop
           args: --release
           working-directory: URS
-      # - name: Run main.py
-      #   run: |
-      #     cd eth-daily-archiver
-      #     python main.py
-      - name: Run URS as a check
+      - name: Run main.py
         working-directory: eth-daily-archiver
+        timeout-minutes: 5 # If this is interrupted, it should catch up in subsequent runs
         run: |
-          python ./main.py --check
-      # - name: Commit and push changes to data branch
-      #   run: |
-      #     cd data
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git add .
-      #     git diff --cached --quiet || git commit -m "Update data from workflow"
-      #     git push
+          python ./main.py
+      - name: Commit and push changes to data repo
+        working-directory: eth-daily-archiver-data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "Update data from workflow"
+          # git push
+          echo "Dummy push for testing purposes. Success!"

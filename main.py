@@ -11,8 +11,8 @@ import argparse
 import glob
 
 URS_ROOT_DIR = "../URS"
-URS_SCRAPES_DIR = f"./scrapes"
-FINAL_SCRAPES_DIR = "../eth-daily-archiver-data"
+URS_SCRAPES_RELATIVE_DIR = f"./scrapes"
+FINAL_OUTPUT_DIR = "../eth-daily-archiver-data"
 THREAD_ID_REGEX = re.compile('/comments/(.+?)/')
 SUBREDDIT_ID_REGEX = re.compile('r/(.+?)/comments/')
 
@@ -29,14 +29,14 @@ print(f"Flags: --number-of-discussions={args.number_of_discussions} --check-quot
 
 if args.check_quota:
     # Run URS quota check and exit
-    check_cmd = "poetry run python ./urs/Urs.py --check"
+    check_cmd = "poetry run python ./Urs.py --check"
     print(f"Running quota check: {check_cmd}")
-    subprocess.run(check_cmd, shell=True, cwd=f"{URS_ROOT_DIR}/")
+    subprocess.run(check_cmd, shell=True, cwd=f"{URS_ROOT_DIR}/urs/")
     sys.exit(0)
 
 # Create directories if they don't exist
-subprocess.check_output(f"mkdir -p {FINAL_SCRAPES_DIR}/", shell=True, universal_newlines=True)
-subprocess.check_output(f"mkdir -p {URS_SCRAPES_DIR}/", shell=True, universal_newlines=True)
+subprocess.check_output(f"mkdir -p {FINAL_OUTPUT_DIR}/", shell=True, universal_newlines=True)
+subprocess.check_output(f"mkdir -p {URS_SCRAPES_RELATIVE_DIR}/", shell=True, universal_newlines=True)
 
 # Create a list of all scrapes from dailies.json
 # https://raw.githubusercontent.com/etheralpha/dailydoots-com/refs/heads/main/_data/dailies.json
@@ -60,7 +60,7 @@ for elem in all_scrapes_json:
         all_scrapes_dict[thread_id] = elem['date']
 
 # Create a list of finished scrape IDs
-finished_scrape_filename_list = subprocess.check_output(f"find {FINAL_SCRAPES_DIR}/ -type f -name '*.json'", shell=True, universal_newlines=True).splitlines()
+finished_scrape_filename_list = subprocess.check_output(f"find {FINAL_OUTPUT_DIR}/ -type f -name '*.json'", shell=True, universal_newlines=True).splitlines()
 print(f"Found {len(finished_scrape_filename_list)} postprocessed scrape files. Generating list of files to scrape...")
 finished_scrape_id_list = []
 
@@ -135,7 +135,7 @@ def postprocess_scrape(filepath):
     }
     # Write file according to its subreddit and date, e.g. 2020-01-01-ethfinance.json
     new_filename = f"{date_of_thread}-{subreddit_id}.json"
-    new_filepath = os.path.join(f'{FINAL_SCRAPES_DIR}', new_filename)
+    new_filepath = os.path.join(f'{FINAL_OUTPUT_DIR}', new_filename)
     print(f"Writing postprocessed json: {new_filename}")
     with open(new_filepath, 'w') as outfile:
         json.dump(new_json, outfile, separators=(',', ':')) # Minify JSON
@@ -146,20 +146,25 @@ def postprocess_scrape(filepath):
     os.rename(filepath, finished_filepath)
 
 def get_all_json_files():
-    return set(glob.glob(f"{URS_SCRAPES_DIR}/**/*.json", recursive=True))
+    print("Listing all JSON files in the URS scrapes directory...")
+    scrape_dir = f"{URS_ROOT_DIR}/{URS_SCRAPES_RELATIVE_DIR}/**/*.json"
+    print(f"Glob: {scrape_dir}")
+    globbed_files = set(glob.glob(scrape_dir, recursive=True))
+    print(f"Globbed files: {len(globbed_files)}")
+    return set(globbed_files)
 
 for i in range(min(num_discussions, len(upcoming_scrapes_json))):
     thread = upcoming_scrapes_json[i]
     print()
     print(f"Now Scraping: date={thread['date']}, comments={thread['comments']}")
-    urs_call = f"poetry run python ./urs/Urs.py -c {thread['link']} 0"
+    urs_call = f"poetry run python ./Urs.py -c {thread['link']} 0"
     print(f"> {urs_call}")
 
     # 1. List all json files before scraping
     before_files = get_all_json_files()
 
     # 2. Run URS
-    remaining_requests, used_requests = run_urs_and_get_requests(urs_call, URS_ROOT_DIR)
+    remaining_requests, used_requests = run_urs_and_get_requests(urs_call, URS_ROOT_DIR + "/urs/")
 
     # 3. List all json files after scraping
     after_files = get_all_json_files()
