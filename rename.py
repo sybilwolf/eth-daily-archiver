@@ -7,7 +7,7 @@ import re
 import json
 import subprocess
 
-FINAL_SCRAPES_DIR = "../drdata"
+FINAL_SCRAPES_DIR = "../eth-daily-archiver-data"
 THREAD_ID_REGEX = re.compile('/comments/(.+?)/')
 SUBREDDIT_ID_REGEX = re.compile('r/(.+?)/comments/')
 
@@ -20,6 +20,7 @@ for filepath in finished_scrape_filename_list:
         thread_link = json_obj['urs_data']['scrape_settings']['url']
         date_of_thread = json_obj['date_of_thread']
         subreddit_id = SUBREDDIT_ID_REGEX.search(thread_link)[1]
+        thread_id = THREAD_ID_REGEX.search(thread_link)[1]
     # Rename the file
-    new_filename = f"{FINAL_SCRAPES_DIR}/{date_of_thread}-{subreddit_id}.json"
+    new_filename = f"{FINAL_SCRAPES_DIR}/{date_of_thread}-{subreddit_id}-{thread_id}.json"
     subprocess.run(['mv', filepath, new_filename])

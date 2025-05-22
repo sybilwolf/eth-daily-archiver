@@ -133,8 +133,8 @@ def postprocess_scrape(filepath):
         "date_of_thread": date_of_thread,
         "urs_data": original_json_object
     }
-    # Write file according to its subreddit and date, e.g. 2020-01-01-ethfinance.json
-    new_filename = f"{date_of_thread}-{subreddit_id}.json"
+    # Write file according to its subreddit and date, e.g. 2020-01-01-ethfinance-xxxxxx.json
+    new_filename = f"{date_of_thread}-{subreddit_id}-{thread_id}.json"
     new_filepath = os.path.join(f'{FINAL_OUTPUT_DIR}', new_filename)
     print(f"Writing postprocessed json: {new_filename}")
     with open(new_filepath, 'w') as outfile:
