@@ -12,7 +12,7 @@ import glob
 
 URS_ROOT_DIR = "../URS"
 URS_SCRAPES_RELATIVE_DIR = f"./scrapes"
-FINAL_OUTPUT_DIR = "../eth-daily-archiver-data"
+FINAL_OUTPUT_DIR = "../eth-daily-archiver-data/data"
 THREAD_ID_REGEX = re.compile('/comments/(.+?)/')
 SUBREDDIT_ID_REGEX = re.compile('r/(.+?)/comments/')
 

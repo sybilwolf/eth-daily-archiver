@@ -72,9 +72,9 @@ jobs:
           git add .
           git diff --cached --quiet || git commit -m "Update data from workflow"
           git push
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: archive
-          path: eth-daily-archiver-data
-          retention-days: 7
+      # - name: Upload artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: archive
+      #     path: eth-daily-archiver-data
+      #     retention-days: 7
