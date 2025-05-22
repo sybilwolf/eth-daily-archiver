@@ -1,18 +1,18 @@
 # Ethereum Daily Archiver
 
-A quick & dirty bot that:
+This daily archiver bot:
 
 * Runs daily via a scheduled GitHub Action
-* Retrieves fresh daily discussion thread metadata from the [dailydoots.com project's](https://github.com/etheralpha/dailydoots-com) `.json` published at [https://dailydoots.com/dailies.json](https://dailydoots.com/dailies.json).
+* Retrieves fresh daily discussion thread metadata from the [dailydoots.com project](https://github.com/etheralpha/dailydoots-com) `dailies.json` published at [https://dailydoots.com/dailies.json](https://dailydoots.com/dailies.json).
 * Archives new Ethereum daily discussion threads to `.json` files, then commits them to the [data repo](https://github.com/sybilwolf/eth-daily-archiver-data). The bot waits until a daily discussion thread is 3 days old before archiving it, to make sure any late comment replies are captured.
 
 In effect, this bot maintains a full canonical archive of all historical ethereum and ethfinance daily threads. To get a copy of the archive, clone or download the [Ethereum Daily Archiver Data Repo](https://github.com/sybilwolf/eth-daily-archiver-data).
 
 # Installation
 
-It's only necessary to install Ethereum Daily Archiver locally if you want to develop/test the script. If you just want the data, visit the [data repo](https://github.com/sybilwolf/eth-daily-archiver-data).
+It's only necessary to install Ethereum Daily Archiver locally if you want to develop/test the script. If you just want the data, clone or download the [data repo](https://github.com/sybilwolf/eth-daily-archiver-data).
 
-To install and run locally, the workflow in the `.workflows` folder for the necessary steps (you can run the same steps as the runner to install and run on your local machine). Running this script locally will require you to clone three repos side-by-side: this repo, [the data dump repo](https://github.com/sybilwolf/eth-daily-archiver-data), and [my URS fork](https://github.com/sybilwolf/URS).
+To build and run the archiver locally, see the workflow in the `.workflows` folder for the necessary steps (you can run the same steps as the runner to build and run on your local machine). The process will require you to clone three repos side-by-side: this repo, [the data dump repo](https://github.com/sybilwolf/eth-daily-archiver-data), and [my URS fork](https://github.com/sybilwolf/URS). You'll need Python, Rust, Poetry and Maturin.
 
 # Under The Hood
 
