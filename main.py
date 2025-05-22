@@ -39,12 +39,15 @@ subprocess.check_output(f"mkdir -p {FINAL_OUTPUT_DIR}/", shell=True, universal_n
 subprocess.check_output(f"mkdir -p {URS_SCRAPES_RELATIVE_DIR}/", shell=True, universal_newlines=True)
 
 # Create a list of all scrapes from dailies.json
+# GitHub URL:
 # https://raw.githubusercontent.com/etheralpha/dailydoots-com/refs/heads/main/_data/dailies.json
+# Site URL:
+# https://dailydoots.com/dailies.json
 # dailies.json format example:
 # [{"date": "2025-05-16", "title": "Daily General Discussion - May 16, 2025", "link": "https://reddit.com/r/ethereum/comments/1kntpet/", "comments": 5}, ...]
 
-github_url = "https://raw.githubusercontent.com/etheralpha/dailydoots-com/refs/heads/main/_data/dailies.json"
-with urllib.request.urlopen(github_url) as response:
+doots_json_url = "https://dailydoots.com/dailies.json"
+with urllib.request.urlopen(doots_json_url) as response:
     all_scrapes_json = json.load(response)
 
 # Remove dailies newer than 3 days ago from the set to scrape, since they may still be active
