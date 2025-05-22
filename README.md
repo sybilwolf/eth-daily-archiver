@@ -6,4 +6,4 @@ A quick & dirty GitHub Actions bot that archives Ethereum daily discussion threa
 
 * Within the URS fork, this uses a commit-hash-pinned version of [PRAW](https://github.com/praw-dev/praw). This is because the latest PRAW release does not currently support [prawcore](https://github.com/praw-dev/prawcore) >3, and this updated prawcore is required to avoid 429 errors in the new API versions.
 
-* Currently the json archive is stored in a private repository. Contact me if you want a dump of it. I may update the action to automatically post the data somewhere like Arweave.
+* For the latest dump of the archive, see the artifacts from the latest workflow run in the Actions tab.
