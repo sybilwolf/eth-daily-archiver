@@ -20,20 +20,11 @@ POST_ID_FROM_FILENAME_REGEX = re.compile(r'-([a-zA-Z0-9]+)\.json$')
 # Argument parsing
 parser = argparse.ArgumentParser(description="Reddit daily scraper")
 parser.add_argument('-n', '--number-of-discussions', type=int, default=0,
-                    help='Maximum number of reddit threads to process before exiting (0 means unlimited)')
-parser.add_argument('-c', '--check-quota', action='store_true',
-                    help='Check Reddit API quota and exit')
+                    help='Maximum number of reddit threads to process in this batch before exiting (0 means unlimited)')
 args = parser.parse_args()
 
 # Print summary of command line flags
-print(f"Flags: --number-of-discussions={args.number_of_discussions} --check-quota={args.check_quota}")
-
-if args.check_quota:
-    # Run URS quota check and exit
-    check_cmd = "poetry run python ./Urs.py --check"
-    print(f"Running quota check: {check_cmd}")
-    subprocess.run(check_cmd, shell=True, cwd=f"{URS_ROOT_DIR}/urs/")
-    sys.exit(0)
+print(f"Flags: --number-of-discussions={args.number_of_discussions}")
 
 # Create directories if they don't exist
 os.makedirs(FINAL_OUTPUT_DIR, exist_ok=True)
@@ -97,11 +88,8 @@ else:
     num_discussions = args.number_of_discussions
 
 def get_all_json_files():
-    print("Listing all JSON files in the URS scrapes directory...")
     scrape_dir = f"{URS_ROOT_DIR}/{URS_SCRAPES_RELATIVE_DIR}/**/*.json"
-    print(f"Glob: {scrape_dir}")
     globbed_files = set(glob.glob(scrape_dir, recursive=True))
-    print(f"Globbed files: {len(globbed_files)}")
     return set(globbed_files)
 
 for i in range(min(num_discussions, len(upcoming_scrapes_json))):
