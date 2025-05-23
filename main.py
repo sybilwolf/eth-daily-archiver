@@ -9,6 +9,7 @@ import time
 import urllib.request
 import argparse
 import glob
+import datetime
 
 URS_ROOT_DIR = "../URS"
 URS_SCRAPES_RELATIVE_DIR = f"./scrapes"
@@ -44,7 +45,10 @@ with urllib.request.urlopen(doots_json_url) as response:
 
 # Remove dailies newer than 3 days ago from the set to scrape, since they may still be active
 three_days_ago = time.time() - (3 * 24 * 60 * 60)
-all_scrapes_json = [elem for elem in all_scrapes_json if time.mktime(time.strptime(elem['date'], "%Y-%m-%d")) < three_days_ago]
+all_scrapes_json = [
+    elem for elem in all_scrapes_json
+    if datetime.datetime.strptime(elem['date'], "%Y-%m-%d").timestamp() < three_days_ago
+]
 
 # Transform the all_scrapes_json to a dictionary with the thread id as the key and the official dailydoots thread date as the value
 # This is used later to add the thread date metadata to the thread that has just been scraped
