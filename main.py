@@ -9,7 +9,7 @@ import time
 import urllib.request
 import argparse
 import glob
-import datetime
+from datetime import datetime, timedelta, timezone
 
 URS_ROOT_DIR = "../URS"
 URS_SCRAPES_RELATIVE_DIR = f"./scrapes"
@@ -41,23 +41,27 @@ os.makedirs(URS_SCRAPES_RELATIVE_DIR, exist_ok=True)
 
 doots_json_url = "https://dailydoots.com/dailies.json"
 with urllib.request.urlopen(doots_json_url) as response:
-    all_scrapes_json = json.load(response)
+    all_threads_json = json.load(response)
 
-# Remove dailies newer than 3 days ago from the set to scrape, since they may still be active
-three_days_ago = time.time() - (3 * 24 * 60 * 60)
-all_scrapes_json = [
-    elem for elem in all_scrapes_json
-    if datetime.datetime.strptime(elem['date'], "%Y-%m-%d").timestamp() < three_days_ago
-]
+# Remove dailies newer than 3 days ago from the set to scrape, since they may still be active.
+# Dailies are typically posted at 06:00 UTC on their thread date, so we can use that as a cutoff
+# to determine if a daily is old enough to scrape.
+current_datetime = datetime.now(timezone.utc)
+datetime_three_days_ago = current_datetime - timedelta(days=3)
+aged_threads_json = []
+for elem in all_threads_json:
+    thread_date_utc_six_am = datetime.strptime(elem['date'], "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(hours=6)
+    if thread_date_utc_six_am < datetime_three_days_ago:
+        aged_threads_json.append(elem)
 
-# Transform the all_scrapes_json to a dictionary with the thread id as the key and the official dailydoots thread date as the value
+# Transform the aged_threads_json to a dictionary with the thread id as the key and the official dailydoots thread date as the value
 # This is used later to add the thread date metadata to the thread that has just been scraped
-all_scrapes_dict = {}
-for elem in all_scrapes_json:
+aged_threads_dict = {}
+for elem in aged_threads_json:
     match = THREAD_ID_REGEX.search(elem['link'])
     if match:
         thread_id = match[1]
-        all_scrapes_dict[thread_id] = elem['date']
+        aged_threads_dict[thread_id] = elem['date']
 
 # Create a list of already finished scrape IDs
 finished_scrape_filename_list = glob.glob(f"{FINAL_OUTPUT_DIR}/**/*.json", recursive=True)
@@ -72,7 +76,7 @@ for line in finished_scrape_filename_list:
 # Create upcoming_scrapes_json: only scrape threads whose id is not already in finished_scrape_id_list
 finished_scrape_id_set = set(finished_scrape_id_list)
 upcoming_scrapes_json = []
-for elem in all_scrapes_json:
+for elem in aged_threads_json:
     match = THREAD_ID_REGEX.search(elem['link'])
     if match:
         thread_id = match[1]
@@ -80,7 +84,7 @@ for elem in all_scrapes_json:
             upcoming_scrapes_json.append(elem)
 
 # Print statistics to the user before we begin scraping
-total_ct = len(all_scrapes_json)
+total_ct = len(aged_threads_json)
 finished_ct = len(finished_scrape_id_list)
 upcoming_ct = len(upcoming_scrapes_json)
 print(f'Total Daily Threads: {total_ct}, In Archive: {finished_ct}, To Archive: {upcoming_ct}')
@@ -138,7 +142,7 @@ for i in range(min(num_discussions, len(upcoming_scrapes_json))):
         thread_id = THREAD_ID_REGEX.search(thread_link)[1]
         subreddit_id = SUBREDDIT_ID_REGEX.search(thread_link)[1]
 
-    date_of_thread = all_scrapes_dict.get(thread_id, None)
+    date_of_thread = aged_threads_dict.get(thread_id, None)
 
     # Create the new structure
     new_json = {
